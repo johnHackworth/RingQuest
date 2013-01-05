@@ -1,6 +1,12 @@
 (function() {
   var base = window.ringQuest;
   base.controllers.controller = Seed.extend({
+    trigger: function(event, params) {
+      $(this).trigger(event, params)
+    },
+    on: function(event, method) {
+      $(this).on(event, method);
+    },
     createCircle: function(radio, lat, lng, mapContainer) {
       radio = radio || this.radio;
       lat = lat || this.lat;
@@ -27,7 +33,23 @@
           .delay(0)
           .ease('linear')
       }).bind(feature)
+      feature.stop = (function() {
+        this.transition();
+      }).bind(feature);
       return feature;
+    },
+    createLine: function(points, map, options) {
+      map = map || this.map;
+      options = options || {};
+      var color = options.color || 'red';
+      var smooth = options.smooth || 0.6;
+      var dashArray = options.dashArray || '1, 0'
+      var polyline = L.polyline(points, {
+        color: color,
+        smoothFactor: smooth,
+        dashArray: dashArray,
+      }).addTo(map);
+      return polyline;
     }
   });
 })()
