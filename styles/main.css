@@ -4,6 +4,18 @@
   background-color: #999;
 }
 
+#mainLog {
+  position: fixed;
+  bottom: 0;
+  width: 500px;
+  height: 100px;
+  padding: 10px;
+  overflow-y: auto;
+  margin-left: auto;
+  background-color: #FFF;
+  opacity: 0.8;
+}
+
 .tile {
   fill-opacity: 0.4;
   stroke-linejoin: round;
@@ -41,3 +53,5 @@
 .character.evil {
   fill: #220000;
 }
+
+

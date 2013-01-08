@@ -2,8 +2,6 @@
   var base = window.ringQuest;
 
   base.controllers.character = base.controllers.controller.extend({
-    _TRANSITION_SPEED: 1500,
-    _MOVE_REGION: 1500,
     radio: 10,
     lat: -60,
     lng: -98,
@@ -89,13 +87,21 @@
         }
         var next = this.model.path.shift();
         var nextPos = next.getLatLng? next.getLatLng() : next;
+        this.currentPos = this.nextPos;
+        this.nextPos = nextPos;
         this.moveTo(nextPos);
-        this.posTimeout = setTimeout(this.setModelPosition.bind(this), Math.floor(this._MOVE_REGION/2))
-        this.moveTimeout = setTimeout(this.move.bind(this), this._MOVE_REGION);
+        this.posTimeout = setTimeout(this.setModelPosition.bind(this), Math.floor(this.getCurrentSpeed()/2))
+        this.moveTimeout = setTimeout(this.move.bind(this), this.getCurrentSpeed());
       } else {
         this.model.arrived();
         this.removeLinePath();
       }
+    },
+    getCurrentSpeed: function() {
+      var speed1 = (this.nextPos && this.nextPos.getBaseSpeed) ? this.nextPos.getBaseSpeed() : 1;
+      var speed2 = (this.currentPos && this.currentPos.getBaseSpeed) ? this.currentPos.getBaseSpeed() : 1;
+      var baseTerrain = speed1 + speed2;
+      return 100 * baseTerrain * this.model.speed;
     },
     stop: function() {
       clearTimeout(this.moveTimeout);

@@ -9,20 +9,30 @@
   <body>
 
     <div id="mainMap">map</div>
+    <div id="mainLog"></div>
 
     <script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
     <script src="vendors/jquery/jquery-1.8.3.min.js"></script>
     <script src="vendors/seed/seed.min.js"></script>
     <script src="vendors/d3/d3.v3.min.js"></script>
+    <script src="vendors/lodash/lodash.min.js"></script>
+    <script src="vendors/easystar/easystar.js"></script>
     <script src="app/init.js"></script>
+
     <script src="app/models/main.model.js"></script>
     <script src="app/models/character.model.js"></script>
     <script src="app/models/evilCharacter.model.js"></script>
     <script src="app/models/goodCharacter.model.js"></script>
     <script src="app/models/tile.model.js"></script>
     <script src="app/models/map.model.js"></script>
+
     <script src="app/controllers/main.controller.js"></script>
     <script src="app/controllers/mainMap.controller.js"></script>
     <script src="app/controllers/character.controller.js"></script>
+    <script src="app/controllers/log.controller.js"></script>
+
+    <script src="app/directors/template.director.js"></script>
+    <script src="app/directors/game.director.js"></script>
+
   </body>
 </html>

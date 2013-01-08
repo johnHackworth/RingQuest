@@ -29,7 +29,7 @@
           .transition()
           .attr("cx",function(d) { return self.map.latLngToLayerPoint(d).x})
           .attr("cy",function(d) { return self.map.latLngToLayerPoint(d).y})
-          .duration(self._TRANSITION_SPEED)
+          .duration(self.getCurrentSpeed())
           .delay(0)
           .ease('linear')
       }).bind(feature)

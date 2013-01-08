@@ -2,9 +2,10 @@
   var base = window.ringQuest;
 
   base.models.character = base.models.model.extend({
-    strenght: 0,
-    stealth: 0,
-    health: 1,
+    strenght: 5,
+    stealth: 5,
+    health: 5,
+    speed: 5,
     maxHealth: 1,
     alignment: 'neutral',
     followers: [],
@@ -12,7 +13,7 @@
 
     perks: [],
     inventory: [],
-
+    pathLimits: null,
     initialize: function(options) {
       var self = this;
       this.followers = [];
@@ -32,6 +33,9 @@
         var pos = new L.LatLng(this.position.lat, this.position.lng)
         var posOther = new L.LatLng(other.position.lat, other.position.lng)
         if(pos.distanceTo(posOther) < 200000) {
+          this.manageSeeing(other);
+        }
+        if(pos.distanceTo(posOther) < 20000) {
           this.manageEncounter(other);
         }
       }
@@ -39,11 +43,17 @@
     manageEncounter: function(other) {
       this.trigger('alert', 'encounter between '+this.name + ' and '+ other.name);
     },
+    manageSeeing: function(other) {
+      this.trigger('alert', other.name + ' see ' + this.name + 'from afar');
+    },
     checkEncounter: function() {
       this.map.trigger('checkEncounter', this);
     },
     getDestination: function() {
       var self = this;
+      if(limits != null) {
+
+      }
       var x = Math.floor(Math.random()*this.map.maxX);
       var y = Math.floor(Math.random()*this.map.maxY);
 
@@ -55,6 +65,9 @@
       other.path = this.path;
       other.trigger('path:changed');
     },
+    setPathOtherPos: function(other) {
+      this.getPath(this.position, other.position)
+    },
     setDestination: function(end, latlng) {
       latlng = latlng || end.getLatLng();
       this.destination = end;
@@ -65,28 +78,33 @@
       this.checkEncounter();
     },
     getPath: function(a, b, append) {
+      var self = this;
       if(a.getLatLng) {
         a = a.getLatLng();
       }
       var origin = this.map.getTile(a);
       var end = this.map.getTile(b);
       this.setDestination(end, b);
-      var newpath= this.map.getPath(origin, end);
-      if(append) {
-        this.path.push.apply(this.path, newpath);
-      } else {
-        this.path = newpath;
-      }
+      $.when(this.map.getPath(origin, end)).done(function(newpath, res2) {
+        if(!newpath.length) {
+          return false;
+        };
+        if(append) {
+          self.path.push.apply(self.path, newpath);
+        } else {
+          self.path = newpath;
+        }
 
-      if(this.path[this.path.length -1] == end) {
-        this.path.push(b);
-      }
-      this.trigger('path:changed');
+        if(self.path[self.path.length -1] == end) {
+          self.path.push(b);
+        }
+        self.trigger('path:changed');
 
-      var i = 1;
-      for(var f in this.followers) {
-        setTimeout((function() { this.setPathOther(this.followers[f]) }).bind(this), 300*i++);
-      }
+        var i = 1;
+        for(var f in self.followers) {
+          setTimeout((function() { this.setPathOther(this.followers[f]) }).bind(self), 300*i++);
+        }
+      })
     },
     arrived: function() {
       if(this.auto) {
