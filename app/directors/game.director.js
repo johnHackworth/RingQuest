@@ -38,8 +38,14 @@
       var nNazgul = 5;
       var nazgul = [];
       for(var i = 0; i<nNazgul; i++) {
-        nazgul[i] = this.initializeChar({name: 'nazgul' + i, lat: -80+i, lng: -70, type: 'evil'})
+        nazgul[i] = this.initializeChar({name: 'nazgul' + i, lat: -80+(0.01*i), lng: -70, type: 'evil'})
         nazgul[i].controller.addToMap();
+        nazgul[i].model.pathLimits = {
+          maxTileX: 93,
+          minTileX: 50,
+          maxTileY: 86,
+          minTileY: 50
+        }
         nazgul[i].model.automove();
       }
     },
@@ -56,8 +62,10 @@
       window.ringQuest.app.models[char.name] = model;
       this.models[char.name] = model;
       this.characters[char.name] = model;
-      this.characters[char.name].on('alert', this.listenCharacterLog)
 
+      this.characters[char.name].on('alert', this.listenCharacterLog)
+      this.characters[char.name].on('attack', this.listenAttack)
+      this.characters[char.name].on('meet', this.listenMeet)
 
       var controller = new ringQuest.controllers.character({
         model: ringQuest.mdl(char.name),
@@ -85,6 +93,12 @@
     },
     listenCharacterLog: function(ev, text) {
       this.logger.log(text)
+    },
+    listenAttack: function(ev, combattants) {
+
+    },
+    listenMeet: function(ev, char) {
+      this.logger.log('The ring bearer has meet '+char.name)
     }
   })
 })()

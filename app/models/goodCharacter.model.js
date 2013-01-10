@@ -9,13 +9,12 @@
         this.trigger('alert', this.name + ' flee from '+ other.name);
       } else if(other.alignment == 'good') {
         if(other.playerControlled) {
-          if(confirm('do you want '+this.name + ' in your group?')) {
-            other.followers.push(this);
-          }
+          this.trigger('meet', this);
         }
       }
-
-
+    },
+    addToFellowship: function(other) {
+      other.followers.push(this);
     }
   })
 })()

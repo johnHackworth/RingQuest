@@ -7,7 +7,7 @@
 
     manageEncounter: function(other) {
       if(other.alignment == 'good') {
-        this.trigger('alert', this.name + ' attacks '+ other.name);
+        this.trigger('attack', {'offensive': this.name, 'defensive': other.name});
       }
     },
     manageSeeing: function(other) {

@@ -51,11 +51,15 @@
     },
     getDestination: function() {
       var self = this;
-      if(limits != null) {
-
+      var x, y;
+      if(this.pathLimits != null) {
+        x = Math.floor(Math.random()*(this.pathLimits.maxTileX - this.pathLimits.minTileX) + this.pathLimits.minTileX);
+        y = Math.floor(Math.random()*(this.pathLimits.maxTileY - this.pathLimits.minTileY) + this.pathLimits.minTileY);
+        console.log(x,y);
+      } else {
+        x = Math.floor(Math.random()*this.map.maxX);
+        y = Math.floor(Math.random()*this.map.maxY);
       }
-      var x = Math.floor(Math.random()*this.map.maxX);
-      var y = Math.floor(Math.random()*this.map.maxY);
 
       this.destination = this.map.grid[x][y];
       this.getPath(this.position, this.destination.getLatLng())
