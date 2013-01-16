@@ -1,3 +1,4 @@
+
 (function() {
   var base = window.ringQuest;
   base.directors.game = Seed.extend({
@@ -11,9 +12,11 @@
       this.bindMethods();
       this.initializeLog();
       this.initializeMap();
+      this.initializeCombat();
       this.initializeRingBearer();
       this.initializePlayableCharacters();
       this.initializeEvilMainCharacters();
+      this.runTime();
     },
     bindMethods: function() {
       this.listenCharacterLog = this.listenCharacterLog.bind(this);
@@ -32,13 +35,15 @@
       var frodo = this.initializeChar({name: 'frodo', lat: -60, lng: -96})
       frodo.controller.addToMap();
       frodo.controller.playerControlled();
+      frodo.model.speed = 10;
       frodo.model.ringBearer = true;
+      frodo.model.img = '/assets/sprites/frodo.gif';
     },
     initializeEvilMainCharacters: function() {
       var nNazgul = 5;
       var nazgul = [];
       for(var i = 0; i<nNazgul; i++) {
-        nazgul[i] = this.initializeChar({name: 'nazgul' + i, lat: -80+(0.01*i), lng: -70, type: 'evil'})
+        nazgul[i] = this.initializeChar({name: 'nazgul' + i, lat: -80+(0.01*i)  , lng: -70, type: 'evil'})
         nazgul[i].controller.addToMap();
         nazgul[i].model.pathLimits = {
           maxTileX: 93,
@@ -46,9 +51,31 @@
           maxTileY: 86,
           minTileY: 50
         }
+        nazgul[i].model.speed = 8;
+        nazgul[i].model.img = '/assets/sprites/nazgul.gif';
+
         nazgul[i].model.automove();
       }
-    },
+      for(var i = 5; i<9; i++) {
+        nazgul[i] = this.initializeChar({name: 'nazgul' + i, lat: -80+(0.01*i)  , lng: -70, type: 'evil'})
+        nazgul[i].controller.addToMap();
+        nazgul[i].model.pathLimits = {
+          center: {
+            x: 68,
+            y: 68
+          },
+          radius:4
+        }
+        nazgul[i].model.automove();
+      }
+      var wraith = this.initializeChar({name: 'wraith', lat: -60  , lng: -90, type: 'evil'})
+      wraith.model.img = '/assets/sprites/wraith.png';
+      wraith.controller.addToMap();
+
+      var oldTree = this.initializeChar({name: 'old willow tree', lat: -61  , lng: -92, type: 'evil'})
+      oldTree.model.img = '/assets/sprites/eviltree.png';
+      oldTree.controller.addToMap();}
+    ,
     initializeChar: function(char) {
       var classFactory = {
         'good': ringQuest.models.goodCharacter,
@@ -63,17 +90,15 @@
       this.models[char.name] = model;
       this.characters[char.name] = model;
 
-      this.characters[char.name].on('alert', this.listenCharacterLog)
-      this.characters[char.name].on('attack', this.listenAttack)
-      this.characters[char.name].on('meet', this.listenMeet)
-
+      this.characters[char.name].on('alert', this.listenCharacterLog.bind(this))
+      this.characters[char.name].on('attack', this.listenAttack.bind(this))
+      this.characters[char.name].on('meet', this.listenMeet.bind(this))
+      this.characters[char.name].on('death', this.characterDeath.bind(this))
       var controller = new ringQuest.controllers.character({
         model: ringQuest.mdl(char.name),
         map: this.controllers.map
       })
-      window.ringQuest.app.controllers[char.name] = controller;
       this.controllers[char.name] = controller;
-
       return {'model': model, 'controller': controller}
 
     },
@@ -91,14 +116,45 @@
         this.characters[name].on('alert', this.listenCharacterLog)
       }
     },
+    initializeCombat: function() {
+      this.combat = new ringQuest.controllers.combat({
+        templateDirector: this.templateDirector,
+        element: $('#combatWindow')
+      });
+    },
     listenCharacterLog: function(ev, text) {
       this.logger.log(text)
     },
     listenAttack: function(ev, combattants) {
-
+      this.freezeTime();
+      this.combat.initCombat(combattants.offensive,
+        combattants.defensive)
     },
     listenMeet: function(ev, char) {
       this.logger.log('The ring bearer has meet '+char.name)
-    }
+    },
+
+    characterDeath: function(ev, char) {
+      this.logger.log(char.name + ' IS DEAD!!!!')
+    },
+    freezeTime: function() {
+      clearInterval(this.timeInterval)
+    },
+    runTime: function() {
+      this.timeInterval = setInterval(this.tick.bind(this), 300)
+    },
+    tick: function() {
+      for(var name in this.controllers) {
+        if(this.controllers[name].movable) {
+          this.controllers[name].move();
+        }
+      }
+      for(var name in this.models) {
+        if(this.models[name].type == 'character') {
+          this.models['map'].trigger('checkEncounter', this.models[name]);
+        }
+      }
+
+    },
   })
 })()

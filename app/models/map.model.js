@@ -44,7 +44,6 @@
       var easyStar = new EasyStar.js([1,2,3,4,5,7],
         function(res){
           tilePath = self.translatePath(res);
-          console.log(path);
           dfd.resolve(tilePath)
         }
       );

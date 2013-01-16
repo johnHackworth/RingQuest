@@ -1,3 +1,7 @@
+body {
+  font-family: verdana, courier, arial;
+}
+
 #mainMap {
   width: 100%;
   height: 100%;
@@ -14,6 +18,17 @@
   margin-left: auto;
   background-color: #FFF;
   opacity: 0.8;
+}
+
+.modalWindow {
+  width: 100%;
+  height: 100%;
+  background-color: #531;
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0.9;
+  display: none;
 }
 
 .tile {

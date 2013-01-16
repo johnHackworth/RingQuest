@@ -6,14 +6,25 @@
     speed: 8,
 
     manageEncounter: function(other) {
+      console.log('free?')
+      if(this.freezed) {
+        return ;
+      }
       if(other.alignment == 'good') {
-        this.trigger('attack', {'offensive': this.name, 'defensive': other.name});
+        console.log('freezed', this.freezed)
+        var attackers = [this];
+        var defenders = [other];
+
+        this.trigger('attack', {'offensive': attackers, 'defensive': defenders});
       }
     },
     manageSeeing: function(other) {
       if(other.ringBearer) {
         this.setPathOtherPos(other);
       }
+    },
+    getCombatAction: function() {
+      return 'attack'
     }
   })
 })()

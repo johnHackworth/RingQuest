@@ -66,7 +66,6 @@
       var self = this;
       this.map.on('click', function(ev) {
         var tile = self.model.getTile(ev.latlng);
-        console.log(tile.x, tile.y, tile.getLatLng(), ev.latlng);
       });
     },
     showTiles: function(type) {
@@ -98,7 +97,6 @@
             if(self.saving) {
               var x = this.tile.x;
               var y = this.tile.y;
-              console.log(self.newType);
               self.model.grid[this.tile.x][this.tile.y].type = self.newType;
               this.attr('stroke',self.getColor(self.model.grid[x][y].type));
               this.attr('stroke-fill',self.getColor(self.model.grid[x][y].type));

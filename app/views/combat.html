@@ -1,3 +1,56 @@
-<div class="window">
-  combat
+<div>
+  <script id="frame" type="text/template">
+    <div class="combatSimulator">
+      <div class="simulation"></div>
+      <div class="combatants"></div>
+      <div class="buttons"></div>
+    </div>
+  </script>
+
+
+  <script id="buttons" type="text/template">
+    <a href="#" class="attack">attack</a>
+    <a href="#" class="defend">defend</a>
+    <a href="#" class="flee">flee</a>
+    <a href="#" class="hide">hide</a>
+  </script>
+
+
+  <script id="combatants" type="text/template">
+    <div class="attacker">
+      <% _.each(attackers, function(char) { %>
+        <p class="characterLine charInfo <%= char.name %>" >
+          <%= char.name %> (<span class="currentHealth"><%= char.health %></span> / <%= char.maxHealth %>)
+        </p> <% });
+      %>
+    </div>
+    <div class="defender">
+      <% _.each(defenders, function(char) { %>
+        <p class="characterLine charInfo <%= char.name %>">
+          <%= char.name %> (<span class="currentHealth"><%= char.health %></span> / <%= char.maxHealth %>)
+        </p> <% });
+      %>
+    </div>
+  </script>
+
+
+  <script id="action" type="text/template">
+    <div class="combatView">
+      <% _.each(attackers, function(char) { %>
+        <div class="characterAvatar attacker <%= char.name %>" >
+          <img src="<%= char.img %>" id="img_<%= char.name %>" class=""/>
+          <div class="damage"></div>
+          <div class="status"></div>
+        </div>
+      <% }); %>
+
+      <% _.each(defenders, function(char) { %>
+        <div class="characterAvatar defender <%= char.name %>">
+          <img src="<%= char.img %>" id="img_<%= char.name %>" class=""/>
+          <div class="damage"></div>
+          <div class="status"></div>
+        </div>
+      <% });%>
+    </div>
+  </script>
 </div>

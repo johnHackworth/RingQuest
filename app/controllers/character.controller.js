@@ -9,11 +9,13 @@
     color2: '#000',
     type: 'char',
     path: [],
+    movable: true,
     initialize: function(options) {
       var self = this;
       this.model = options.model
       this.map = options.map;
       this.model.on('path:changed', this.pathChanged.bind(this));
+      this.model.on('death', this.remove.bind(this));
       this.map.on('zoom:changed', this.redraw.bind(this));
     },
     redraw: function() {
@@ -28,7 +30,7 @@
       this.move();
     },
     addToMap: function() {
-      this.view = this.createCircle(10,
+      this.view = this.createCircle(3,
         this.model.position.lat,
         this.model.position.lng
       );
@@ -39,20 +41,31 @@
             .attr('class','character ' + this.model.type + ' '+this.model.alignment)
             .attr('name', this.model.name)
       this.view.update();
-      setTimeout(this.move.bind(this),25);
+      // setTimeout(this.move.bind(this),25);
     },
     moveTo: function(latLng) {
       this.view.data([latLng]);
       this.view.move();
+
+      if(this.fog) {
+        this.fog.data([latLng]);
+        this.fog.move();
+      }
     },
     playerControlled: function() {
-      this.map.map.on('click', this.moveToClick.bind(this));
+      this.mapEvent = this.map.map.on('click', this.moveToClick.bind(this));
       var currentClass = this.view.attr('class');
       if(currentClass.indexOf('selected') < 0) {
         currentClass += ' selected';
         this.view.attr('class', currentClass)
       }
       this.model.playerControlled = true;
+      this.fogOfWar();
+    },
+    computerControlled: function() {
+      this.map.map.off(this.mapEvent);
+      this.model.playerControlled = false;
+      this.fog.remove();
     },
     moveToClick: function(ev) {
       // var latlng = ev.latlng;
@@ -67,6 +80,7 @@
         'lat': lat,
         'lng': lng
       };
+
       if(ev.originalEvent.ctrlKey && this.model.path && this.model.path.length > 0) {
         var newpath = this.model.getPath(this.model.path[this.model.path.length -1], ev.latlng, true);
         // this.path.push(newpath)
@@ -74,27 +88,46 @@
         var newpath = this.model.getPath(originLatLng, ev.latlng);
       }
     },
+    fogOfWar: function() {
+      this.fog = this.createCircle(2200,
+        this.model.position.lat,
+        this.model.position.lng
+      );
+      this.fog.attr('fill','transparent')
+            .attr('stroke', '#333')
+            .attr('stroke-opacity', 0.6)
+            .attr('stroke-width', 4000)
+            .attr('line-color', '#333')
+            .attr('name', this.model.name)
+      this.fog.update();
+    },
     move: function() {
-      if(this.model.path && this.model.path.length) {
-        if(this.model.playerControlled) {
-          this.removeLinePath();
-          this.linePath = this.createLine(this.model.pathAsArray(),
-            this.map.map,
-            {
-              dashArray: '5, 10',
-              color: '#641'
-            });
-        }
-        var next = this.model.path.shift();
-        var nextPos = next.getLatLng? next.getLatLng() : next;
-        this.currentPos = this.nextPos;
-        this.nextPos = nextPos;
-        this.moveTo(nextPos);
-        this.posTimeout = setTimeout(this.setModelPosition.bind(this), Math.floor(this.getCurrentSpeed()/2))
-        this.moveTimeout = setTimeout(this.move.bind(this), this.getCurrentSpeed());
+      if(this.model.freezed > 0) {
+        this.model.freezed--;
+        // this.moveTimeout = setTimeout(this.move.bind(this), this.getCurrentSpeed());
       } else {
-        this.model.arrived();
-        this.removeLinePath();
+
+        if(this.model.path && this.model.path.length) {
+          if(this.model.playerControlled) {
+            this.removeLinePath();
+            this.linePath = this.createLine(this.model.pathAsArray(),
+              this.map.map,
+              {
+                dashArray: '5, 10',
+                color: '#641'
+              });
+          }
+          var next = this.model.path.shift();
+          var nextPos = next.getLatLng? next.getLatLng() : next;
+          this.currentPos = this.nextPos;
+          this.nextPos = nextPos;
+          this.moveTo(nextPos);
+          this.posTimeout = setTimeout(this.setModelPosition.bind(this), Math.floor(this.getCurrentSpeed()/2))
+          // this.moveTimeout = setTimeout(this.move.bind(this), this.getCurrentSpeed());
+        } else {
+          this.model.arrived();
+          this.removeLinePath();
+        }
       }
     },
     getCurrentSpeed: function() {
@@ -110,10 +143,14 @@
       this.view.update();
     },
     setModelPosition: function() {
-      this.model.setPosition(this.view.data()[0])
+      this.model.setPosition(this.view.data()[0]);
     },
     removeLinePath: function() {
       if(this.linePath) this.map.map.removeLayer(this.linePath);
+    },
+    remove: function() {
+      this.view.remove();
+      this.computerControlled();
     }
 
   });
