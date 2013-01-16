@@ -9,27 +9,43 @@
 
 
   <script id="buttons" type="text/template">
-    <a href="#" class="attack">attack</a>
-    <a href="#" class="defend">defend</a>
-    <a href="#" class="flee">flee</a>
-    <a href="#" class="hide">hide</a>
+
   </script>
 
 
   <script id="combatants" type="text/template">
     <div class="attacker">
       <% _.each(attackers, function(char) { %>
-        <p class="characterLine charInfo <%= char.name %>" >
-          <%= char.name %> (<span class="currentHealth"><%= char.health %></span> / <%= char.maxHealth %>)
-        </p> <% });
+        <div class="characterLine charInfo <%= char.name %>" >
+          <%= char.name %> ( <span class="currentHealth"> <%= char.health %> </span> / <%= char.maxHealth %>)
+          <% if(attackers.playable == true){ %>
+          <div class="buttons">
+            <a href="#" class="setAttack" data-char="<%= char.name %>">attack</a>
+            <a href="#" class="setDefend" data-char="<%= char.name %>">defend</a>
+            <a href="#" class="setFlee" data-char="<%= char.name %>">flee</a>
+            <a href="#" class="setHide" data-char="<%= char.name %>">hide</a>
+          </div>
+          <% } %>
+        </div> <% });
       %>
     </div>
     <div class="defender">
       <% _.each(defenders, function(char) { %>
-        <p class="characterLine charInfo <%= char.name %>">
+        <div class="characterLine charInfo <%= char.name %>">
           <%= char.name %> (<span class="currentHealth"><%= char.health %></span> / <%= char.maxHealth %>)
-        </p> <% });
+          <% if(defenders.playable == true){ %>
+          <div class="buttons">
+            <a href="#" class="setAttack" data-char="<%= char.name %>">attack</a>
+            <a href="#" class="setDefend" data-char="<%= char.name %>">defend</a>
+            <a href="#" class="setFlee" data-char="<%= char.name %>">flee</a>
+            <a href="#" class="setHide" data-char="<%= char.name %>">hide</a>
+          </div>
+          <% } %>
+        </div> <% });
       %>
+    </div>
+    <div class="options">
+      <a href="#" class="fight">FIGHT</a>
     </div>
   </script>
 

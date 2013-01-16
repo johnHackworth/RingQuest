@@ -10,6 +10,7 @@
     type: 'char',
     path: [],
     movable: true,
+    currentSpeed: 300,
     initialize: function(options) {
       var self = this;
       this.model = options.model
@@ -54,18 +55,20 @@
     },
     playerControlled: function() {
       this.mapEvent = this.map.map.on('click', this.moveToClick.bind(this));
-      var currentClass = this.view.attr('class');
-      if(currentClass.indexOf('selected') < 0) {
-        currentClass += ' selected';
-        this.view.attr('class', currentClass)
+      if(this.view) {
+        var currentClass = this.view.attr('class');
+        if(currentClass.indexOf('selected') < 0) {
+          currentClass += ' selected';
+           this.view.attr('class', currentClass)
+        }
+        this.model.playerControlled = true;
+        this.fogOfWar();
       }
-      this.model.playerControlled = true;
-      this.fogOfWar();
     },
     computerControlled: function() {
-      this.map.map.off(this.mapEvent);
+      if(this.mapEvent) this.map.map.off(this.mapEvent);
       this.model.playerControlled = false;
-      this.fog.remove();
+      if(this.fog) this.fog.remove();
     },
     moveToClick: function(ev) {
       // var latlng = ev.latlng;
@@ -122,7 +125,7 @@
           this.currentPos = this.nextPos;
           this.nextPos = nextPos;
           this.moveTo(nextPos);
-          this.posTimeout = setTimeout(this.setModelPosition.bind(this), Math.floor(this.getCurrentSpeed()/2))
+          this.posTimeout = setTimeout(this.setModelPosition.bind(this), 100)
           // this.moveTimeout = setTimeout(this.move.bind(this), this.getCurrentSpeed());
         } else {
           this.model.arrived();
@@ -131,10 +134,11 @@
       }
     },
     getCurrentSpeed: function() {
-      var speed1 = (this.nextPos && this.nextPos.getBaseSpeed) ? this.nextPos.getBaseSpeed() : 1;
-      var speed2 = (this.currentPos && this.currentPos.getBaseSpeed) ? this.currentPos.getBaseSpeed() : 1;
-      var baseTerrain = speed1 + speed2;
-      return 100 * baseTerrain * this.model.speed;
+      return this.currentSpeed;
+      // var speed1 = (this.nextPos && this.nextPos.getBaseSpeed) ? this.nextPos.getBaseSpeed() : 1;
+      // var speed2 = (this.currentPos && this.currentPos.getBaseSpeed) ? this.currentPos.getBaseSpeed() : 1;
+      // var baseTerrain = speed1 + speed2;
+      // return 100 * baseTerrain * this.model.speed;
     },
     stop: function() {
       clearTimeout(this.moveTimeout);
@@ -149,8 +153,13 @@
       if(this.linePath) this.map.map.removeLayer(this.linePath);
     },
     remove: function() {
-      this.view.remove();
-      this.computerControlled();
+      debugger;
+      if(this.view) {
+        // if(this.playerControlled) this.computerControlled();
+        this.view.remove();
+        delete this.view;
+      }
+
     }
 
   });

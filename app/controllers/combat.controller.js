@@ -41,10 +41,13 @@
     },
     paintButtons: function() {
       this.element.find('.buttons').html(this.buttonsTemplate);
-      this.element.find('.buttons .attack').on('click', this.listenAttackButton.bind(this));
+    },
+    bindButtons: function() {
+      this.element.find('.buttons .setAttack').on('click', this.listenAttackButton.bind(this));
+      this.element.find('.buttons .setDefend').on('click', this.listenDefendButton.bind(this));
+      this.element.find('.buttons .setFlee').on('click', this.listenFleeButton.bind(this));
+      this.element.find('.fight').on('click', this.turn.bind(this));
 
-      this.element.find('.buttons .defend').on('click', this.listenDefendButton.bind(this));
-      this.element.find('.buttons .flee').on('click', this.listenFleeButton.bind(this));
     },
     initCombat: function(attackers, defenders) {
       this.render();
@@ -52,8 +55,10 @@
       this.defenders = defenders;
       if(this.attackers[0].playerControlled) {
         this.playerFaction = this.attackers;
+        this.attackers.playable = true;
       } else {
         this.playerFaction = this.defenders;
+        this.defenders.playable = true;
       }
       this.element.find('.combatants').html(
         _.template(this.combatantsTemplate, {
@@ -67,8 +72,25 @@
           defenders: defenders
         })
       );
+      this.bindButtons();
+      this.assignTop();
     },
+    assignTop: function() {
+      for(var i in this.defenders) {
+        var defender = this.element.find('.characterAvatar.'+this.defenders[i].name)
+        defender.css({top: (30*i)})
+        defender.data('rest-position', 30*i)
+        defender.data('combat-position', ""+(20+8*i)+"%")
+      }
+      for(var i in this.attackers) {
+        var attacker = this.element.find('.characterAvatar.'+this.attackers[i].name);
+        attacker.css({top: (30*i)})
+        attacker.data('rest-position', 30*i)
+        attacker.data('combat-position', ""+(20+8*i)+"%")
 
+      }
+
+    },
     log: function(text) {
       this.logElement.prepend(_.template(this.entryTemplate, {entryClass:'', entryText: text}))
     },
@@ -80,28 +102,70 @@
         'flee': this.flee.bind(this),
         'defend': this.defend.bind(this)
       }
-      var attackerAction = this.attackers[0].getCombatAction();
-      var defenderAction = this.defenders[0].getCombatAction();
+      var attacks = [];
+      var defenses = [];
+      for(var i in this.attackers) {
+        if(typeof this.attackers[i] === 'object') {
+          attacks.push({
+            char: this.attackers[i],
+            action: this.attackers[i].getCombatAction()
+          })
+        }
+      }
+      for(var i in this.defenders) {
+        if(typeof this.defenders[i] === 'object') {
+          defenses.push({
+            char: this.defenders[i],
+            action: this.defenders[i].getCombatAction()
+          })
+        }
+      }
+      var activity = [];
+      for(var i in attacks) {
+        var randDef = Math.floor(self.defenders.length * Math.random());
+        activity.push(actions[attacks[i].action](attacks[i].char, self.defenders[randDef], attacks[i].action, defenses[randDef]));
+      }
+      $.when.apply(this, activity).done( function() {
+        for(var i in defenses) {
+          var randAtt = Math.floor(self.attackers.length * Math.random());
+          actions[defenses[i].action](self.defenders[i], self.attackers[randAtt], defenses[i].action, attacks[randAtt]);
+        }
 
-      $.when(
-        actions[attackerAction](self.attackers[0], self.defenders[0], attackerAction, defenderAction)
-      ).done(
-        function() {
-        actions[defenderAction](self.defenders[0], self.attackers[0], defenderAction, attackerAction);
       })
+
     },
 
-    listenAttackButton: function() {
-      this.playerFaction[0].selectedCombatAction = 'attack';
-      this.turn();
+    listenAttackButton: function(ev) {
+      var button = $(ev.currentTarget);
+      button.parents('.buttons').find('a').removeClass('selected')
+      button.addClass('selected');
+      var charName = $(ev.currentTarget).data('char');
+      for(var i in this.playerFaction) {
+        if(this.playerFaction[i].name == charName) {
+          this.playerFaction[i].selectedCombatAction = 'attack';
+        }
+      }
     },
-    listenDefendButton: function() {
-      this.playerFaction[0].selectedCombatAction = 'defend';
-      this.turn();
-    },
-    listenFleeButton: function() {
-      this.playerFaction[0].selectedCombatAction = 'flee';
-      this.turn();
+    listenDefendButton: function(ev) {
+      var button = $(ev.currentTarget);
+      button.parents('.buttons').find('a').removeClass('selected')
+      button.addClass('selected');
+      var charName = $(ev.currentTarget).data('char');
+      for(var i in this.playerFaction) {
+        if(this.playerFaction[i].name == charName) {
+          this.playerFaction[i].selectedCombatAction = 'defend';
+        }
+      }    },
+    listenFleeButton: function(ev) {
+      var button = $(ev.currentTarget);
+      button.parents('.buttons').find('a').removeClass('selected')
+      button.addClass('selected');
+      var charName = $(ev.currentTarget).data('char');
+      for(var i in this.playerFaction) {
+        if(this.playerFaction[i].name == charName) {
+          this.playerFaction[i].selectedCombatAction = 'flee';
+        }
+      }
     },
     fight: function(attacker, defender, attackerAction, defenderAction) {
       var dfd = $.Deferred();
@@ -111,9 +175,9 @@
       if(attacker.health < 1) return;
       var attackerAvatar = this.element.find('.characterAvatar.'+attacker.name);
       var defenderAvatar = this.element.find('.characterAvatar.'+defender.name);
-      attackerAvatar.css({left: "48%", top:"40%"});
+      attackerAvatar.css({left: "48%", top: attackerAvatar.data('combat-position')});
       setTimeout(function(){attackerAvatar.addClass('fighting')},1500)
-      defenderAvatar.css({left: "52%", top:"40%"});
+      defenderAvatar.css({left: "52%", top: defenderAvatar.data('combat-position')});
       setTimeout(function(){defenderAvatar.addClass('fighting')},1500)
 
       var attackForce = attacker.getAttackValue() * Math.random();
@@ -135,9 +199,12 @@
           defender.health -= damage;
           self.updateStatus(defender, damage);
           if(defender.health <= 0) {
-            defender.trigger('death', defender);
+            debugger;
+            setTimeout(self.checkEnd.bind(self), 2000)
             defenderAvatar.addClass('dead')
-            setTimeout(self.close.bind(self), 2000)
+            defender.trigger('death', defender);
+
+
           }
         }
 
@@ -147,15 +214,16 @@
           attacker.health -= damage;
           self.updateStatus(attacker, damage);
           if(attacker.health <= 0) {
-            attacker.trigger('death', attacker);
+            setTimeout(self.checkEnd.bind(self), 2000)
             attackerAvatar.addClass('dead')
-            setTimeout(self.close.bind(self), 2000)
+            attacker.trigger('death', attacker);
+
+
           }
         }
 
-        console.log('fight emd')
-        attackerAvatar.css({left: '', top: ''});
-        defenderAvatar.css({left: '', top: ''});
+        attackerAvatar.css({left: '', top: attackerAvatar.data('rest-position')});
+        defenderAvatar.css({left: '', top: defenderAvatar.data('rest-position')});
         setTimeout(function() { attackerAvatar.removeClass('fighting')}, 200);
         setTimeout(function() { attackerAvatar.addClass('fighting')}, 400);
         setTimeout(function() { attackerAvatar.removeClass('fighting')}, 600);
@@ -189,16 +257,52 @@
       if(attacker.health < 1) return;
       var fleeAttemp = attacker.stealth * Math.random();
       var chaseAttemp = defender.speed * Math.random();
-      console.log(fleeAttemp, chaseAttemp)
+
       if(fleeAttemp > chaseAttemp) {
-        defender.freeze();
-        this.close();
+        attacker.fleed = true;
       }
+      this.checkEnd();
     },
     defend: function(attacker, defender, attackerAction, defenderAction) {
 
     },
+    checkEnd: function() {
+      debugger;
+      var defendersLeft = false;
+      var defendersFlee = false;
+      var attackersLeft = false;
+      var attackersFlee = false;
+      for(var i = 0; i < this.attackers.length; i++) {
+        if(this.attackers[i].health > 0 && !this.attackers[i].fleed) {
+          attackersLeft = true;
+        }
+        if(this.attackers[i].fleed) {
+          attackersFlee = true;
+        }
+      }
+      for(var i = 0; i < this.defenders.length; i++) {
+        if(this.defenders[i].health > 0 && !this.defenders[i].fleed) {
+          defendersLeft = true;
+        }
+        if(this.defenders[i].fleed) {
+          defendersFlee = true;
+        }
+      }
 
+      if(!defendersLeft || !attackersLeft) {
+        if(defendersFlee) {
+          for(var i=0;i<this.attackers.length;i++) {
+            this.attackers[i].freeze();
+          }
+        }
+        if(attackersFlee) {
+          for(var i=0;i<this.defenders.length;i++) {
+            this.defenders[i].freeze();
+          }
+        }
+        this.close();
+      }
+    },
     close: function() {
       this.closing = true;
       this.trigger('combatClose');

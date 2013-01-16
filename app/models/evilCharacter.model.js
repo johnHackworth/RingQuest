@@ -6,14 +6,21 @@
     speed: 8,
 
     manageEncounter: function(other) {
-      console.log('free?')
       if(this.freezed) {
         return ;
       }
+
       if(other.alignment == 'good') {
         console.log('freezed', this.freezed)
         var attackers = [this];
+        if(this.members) {
+          attackers = this.members;
+        }
         var defenders = [other];
+        if(other.members) {
+          defenders = other.members;
+        }
+
 
         this.trigger('attack', {'offensive': attackers, 'defensive': defenders});
       }

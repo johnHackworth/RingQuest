@@ -6,9 +6,12 @@
     models: {},
     controllers: {},
     characters: {},
+    parties: {},
     templateDirector: null,
+    gameSpeed: 300,
     initialize: function() {
       this.templateDirector = new base.directors.template({});
+      this.injectConstants();
       this.bindMethods();
       this.initializeLog();
       this.initializeMap();
@@ -17,6 +20,9 @@
       this.initializePlayableCharacters();
       this.initializeEvilMainCharacters();
       this.runTime();
+    },
+    injectConstants: function() {
+      base.controllers.character.prototype.currentSpeed = this.gameSpeed;
     },
     bindMethods: function() {
       this.listenCharacterLog = this.listenCharacterLog.bind(this);
@@ -33,11 +39,21 @@
     },
     initializeRingBearer: function() {
       var frodo = this.initializeChar({name: 'frodo', lat: -60, lng: -96})
-      frodo.controller.addToMap();
-      frodo.controller.playerControlled();
       frodo.model.speed = 10;
       frodo.model.ringBearer = true;
       frodo.model.img = '/assets/sprites/frodo.gif';
+
+      var sam = this.initializeChar({name: 'sam', lat: -60, lng: -96})
+      sam.model.speed = 8;
+      sam.model.img = '/assets/sprites/sam.gif';
+
+
+      var fellowship = this.initializeParty({name: 'fellowship', lat: -60, lng: -96});
+      fellowship.controller.addToMap();
+      fellowship.controller.playerControlled();
+      fellowship.model.ringBearer = true;
+      fellowship.model.addMember(frodo.model);
+      fellowship.model.addMember(sam.model);
     },
     initializeEvilMainCharacters: function() {
       var nNazgul = 5;
@@ -102,6 +118,27 @@
       return {'model': model, 'controller': controller}
 
     },
+    initializeParty: function(party) {
+      var model = new ringQuest.models.party({
+          name:party.name,
+          map: this.models.map,
+          lat: party.lat, lng: party.lng});
+      window.ringQuest.app.models[party.name] = model;
+      this.models[party.name] = model;
+      this.parties[party.name] = model;
+
+      this.parties[party.name].on('alert', this.listenCharacterLog.bind(this))
+      this.parties[party.name].on('attack', this.listenAttack.bind(this))
+      this.parties[party.name].on('meet', this.listenMeet.bind(this))
+
+      var controller = new ringQuest.controllers.character({
+        model: ringQuest.mdl(party.name),
+        map: this.controllers.map
+      })
+      this.controllers[party.name] = controller;
+      return {'model': model, 'controller': controller}
+
+    },
     initializeLog: function() {
       var self = this;
       this.logger = new base.controllers.log({
@@ -121,6 +158,7 @@
         templateDirector: this.templateDirector,
         element: $('#combatWindow')
       });
+      this.combat.on('combatClose', this.runTime.bind(this))
     },
     listenCharacterLog: function(ev, text) {
       this.logger.log(text)
@@ -141,7 +179,7 @@
       clearInterval(this.timeInterval)
     },
     runTime: function() {
-      this.timeInterval = setInterval(this.tick.bind(this), 300)
+      this.timeInterval = setInterval(this.tick.bind(this), this.gameSpeed)
     },
     tick: function() {
       for(var name in this.controllers) {
@@ -150,7 +188,7 @@
         }
       }
       for(var name in this.models) {
-        if(this.models[name].type == 'character') {
+        if(this.models[name].type == 'character' || this.models[name].type == 'party') {
           this.models['map'].trigger('checkEncounter', this.models[name]);
         }
       }

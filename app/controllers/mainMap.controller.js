@@ -4,7 +4,7 @@
 
   base.controllers.mainMap = base.controllers.controller.extend({
     baseMap: 'http://johnhackworth.github.com/middle-earth-tiles/{z}/{x}/{y}.jpg',
-    // baseMap: 'http://localhost:8000/tiles/{z}/{x}/{y}.png',
+    // baseMap: 'http://localhost:8000/map/{z}/{x}/{y}.jpg',
     topY: -45,
     bottomY: -85,
     initialize: function(options) {
@@ -39,10 +39,11 @@
     addMap: function() {
       this.mapOptions = $.extend({
         center: [-60, -90],
+        // center: [0,0],
         maxBounds: this.boundaries,
         zoom: 5,
-        maxZoom:5,
-        minZoon:5,
+        maxZoom:10,
+        minZoon:1,
         fadeAnimation: true,
         panAnimation: true,
         // continuousWorld: true,
@@ -67,6 +68,12 @@
       this.map.on('click', function(ev) {
         var tile = self.model.getTile(ev.latlng);
       });
+    },
+    getGeoClick: function() {
+      this.map.on('click', function(ev) {
+        console.log(ev.latlng);
+      });
+
     },
     showTiles: function(type) {
       var self = this;

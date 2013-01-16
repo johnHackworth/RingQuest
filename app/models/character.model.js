@@ -132,7 +132,6 @@
     },
     transformPathToSpeed: function(path, origin) {
       var transformSpeed = (10 - this.speed) + 1
-      console.log(transformSpeed)
       var wholePath = [];
       var current = origin;
       for(var i in path) {

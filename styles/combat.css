@@ -30,14 +30,69 @@
   margin-right: 5px;
 }
 
+.combatants .attacker {
+  width: 45%;
+  margin:1%;
+  float:left;
+}
+
+.combatants .buttons {
+  width: 50%;
+  float: right;
+  text-align: left;
+}
+
+.combatants .defender {
+  width: 45%;
+  margin:1%;
+  float:right;
+}
+
+.combatants .characterLine {
+  width: 100%;
+  display: block;
+  margin-bottom: 0.5em;
+}
+
+.combatants .characterLine a {
+  background-color: #ccc;
+  padding: 2px;
+  margin-right: 2px;
+  font-size: 10px;
+  border-radius: 3px;
+  text-decoration: none;
+  color: #333;
+}
+
+.combatants .characterLine a.selected {
+  background-color: #333;
+  color: #FC9;
+}
+
 .combatView .characterAvatar {
   -webkit-transition: all 0.3s linear, left 2s ease-in-out, top 0.5s ease-in-out;
   -moz-transition: all 0.3s linear, left  2s ease-in-out, top 0.5s ease-in-out;
   -o-transition: all 0.3s linear, left  2s ease-in-out, top 0.5s ease-in-out;
   transition: all 0.3s linear,  left 2s ease-in-out, top 0.5s ease-in-out;
   position: absolute;
+  width: 40px;
 }
 
+.combatants .options {
+  width: 100%;
+  float: left;
+  text-align: center;
+}
+.combatants .fight {
+  padding: 5px;
+  font-size:12px;
+  font-weight: bold;
+  text-decoration: none ;
+  border-radius: 5px;
+  background-color: #DDD;
+  color: #C22;
+
+}
 
 .combatView .characterAvatar.fighting {
   -webkit-filter: blur(0.5px) grayscale(1);
