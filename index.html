@@ -6,12 +6,16 @@
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.css" />
     <link rel="stylesheet" href="styles/main.css" />
     <link rel="stylesheet" href="styles/combat.css" />
+    <link rel="stylesheet" href="styles/actions.css" />
+    <link rel="stylesheet" href="styles/conversation.css" />
   </head>
   <body>
 
     <div id="mainMap">map</div>
     <div id="mainLog"></div>
+    <div id="availableActions"></div>
     <div id="combatWindow" class="modalWindow"></div>
+    <div id="conversationWindow" class="modalWindow"></div>
 
     <script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
     <script src="vendors/jquery/jquery-1.8.3.min.js"></script>
@@ -34,6 +38,8 @@
     <script src="app/controllers/character.controller.js"></script>
     <script src="app/controllers/log.controller.js"></script>
     <script src="app/controllers/combat.controller.js"></script>
+    <script src="app/controllers/actions.controller.js"></script>
+    <script src="app/controllers/conversation.controller.js"></script>
 
     <script src="app/directors/template.director.js"></script>
     <script src="app/directors/game.director.js"></script>

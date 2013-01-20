@@ -13,6 +13,7 @@
     6: river
     7: mountain pass
      */
+    currentChars: {},
     initialize: function(options) {
       this.name = options.name;
       this.type = options.type;
@@ -40,6 +41,12 @@
       }
       var speed = speeds[this.type] || 0;
       return speed;
+    },
+    addChar: function(char) {
+      this.currentChars[char.name] = char;
+    },
+    removeChar: function(char) {
+      delete this.currentChars[char.name];
     }
   });
 })()

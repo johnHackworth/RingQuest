@@ -11,23 +11,19 @@
       }
 
       if(other.alignment == 'good') {
-        console.log('freezed', this.freezed)
-        var attackers = [this];
-        if(this.members) {
-          attackers = this.members;
-        }
-        var defenders = [other];
-        if(other.members) {
-          defenders = other.members;
-        }
-
-
+        var attackers = this.map.getSurrondingCharsAsArray(this.tile,0,'evil', true);
+        var defenders = this.map.getSurrondingCharsAsArray(this.tile,0,'good', true);
         this.trigger('attack', {'offensive': attackers, 'defensive': defenders});
       }
     },
     manageSeeing: function(other) {
-      if(other.ringBearer) {
-        this.setPathOtherPos(other);
+      if(other.alignment === 'good') {
+        console.log(other.ringBearer)
+        if(other.ringBearer) {
+          if(!this.rush) this.rushOn();
+          console.log(other.name, this.name)
+          this.setPathOtherPos(other);
+        }
       }
     },
     getCombatAction: function() {

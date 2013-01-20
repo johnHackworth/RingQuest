@@ -17,6 +17,7 @@
       this.map = options.map;
       this.model.on('path:changed', this.pathChanged.bind(this));
       this.model.on('death', this.remove.bind(this));
+      this.model.on('added:party', this.remove.bind(this));
       this.map.on('zoom:changed', this.redraw.bind(this));
     },
     redraw: function() {
@@ -121,6 +122,12 @@
               });
           }
           var next = this.model.path.shift();
+          if(this.model.rush > 0) {
+            this.model.rush--;
+            if(this.model.path.length > 0) {
+              next = this.model.path.shift();
+            }
+          }
           var nextPos = next.getLatLng? next.getLatLng() : next;
           this.currentPos = this.nextPos;
           this.nextPos = nextPos;
@@ -153,7 +160,6 @@
       if(this.linePath) this.map.map.removeLayer(this.linePath);
     },
     remove: function() {
-      debugger;
       if(this.view) {
         // if(this.playerControlled) this.computerControlled();
         this.view.remove();

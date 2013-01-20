@@ -75,7 +75,6 @@
 
 
       var dirX, dirY;
-      // debugger;
       if(origin.x == end.x) {
         dirX = 0
       } else {
@@ -100,6 +99,36 @@
         return path;
       }
     },
+    getSurrondingChars: function(tile, radio, alignment, charsOnly) {
+      if(!radio) radio = 1;
+      var minX = tile.x-radio;
+      var maxX = tile.x+radio;
+      var minY = tile.y-radio;
+      var maxY = tile.y+radio;
+
+      var surrondingChars = {};
+
+      for(var i = minX; i <= maxX; i++) {
+        for(var j = minY; j <= maxY; j++) {
+          for(var n in this.grid[i][j].currentChars) {
+            var char = this.grid[i][j].currentChars[n]
+            if((!alignment || char.alignment == alignment) && (!charsOnly || char.type == 'character' ) ){
+              surrondingChars[char.name] = char;
+            }
+          }
+        }
+      }
+      return surrondingChars;
+    },
+    getSurrondingCharsAsArray: function(tile, radio, alignment, charsOnly) {
+      var surrObj = this.getSurrondingChars(tile, radio, alignment, charsOnly);
+      var surrArr = [];
+      for(var n in surrObj) {
+        surrArr.push(surrObj[n])
+      }
+      return surrArr;
+    }
+
 
   });
 })()

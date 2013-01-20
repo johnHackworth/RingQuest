@@ -2,6 +2,7 @@
   var base = window.ringQuest;
 
   base.models.character = base.models.model.extend({
+    _BASE_REACH: 3,
     strenght: 5,
     agility: 5,
     stealth: 5,
@@ -13,24 +14,38 @@
     followers: [],
     type: 'character',
 
+    inParty: false,
     perks: [],
     inventory: [],
     pathLimits: null,
+    path: [],
+    rush: 0,
     initialize: function(options) {
       var self = this;
       this.followers = [];
       this.perks = [];
       this.inventory = [];
+      this.path = [];
       this.name = options.name;
       this.strenght = options.strength? options.strength : this.strenght;
       this.stealth = options.stealth? options.stealth : this.stealth;
       this.maxHealth = options.maxHealth? options.maxHealth : this.maxHealth;
       this.map = options.map;
-      this.map.on('checkEncounter', this.respondEncounter.bind(this));
       this.position = {lat: options.lat, lng: options.lng}
+      this.tile = this.map.getTile(this.position);
+      this.tile.addChar(this);
       this.getPath = this.getPath.bind(this);
     },
-    respondEncounter: function(ev,  other) {
+    checkSurrondings: function() {
+      var reach = Math.floor(this._BASE_REACH * this.vision / 10)
+      var surrondingChars = this.map.getSurrondingChars(this.tile, reach);
+      for(var n in surrondingChars) {
+        if(n != this.name) {
+          this.respondEncounter(surrondingChars[n])
+        }
+      }
+    },
+    respondEncounter: function(other) {
       if(other != this && other.followers.indexOf(this) <0 && this.followers.indexOf(other) < 0) {
         var pos = new L.LatLng(this.position.lat, this.position.lng)
         var posOther = new L.LatLng(other.position.lat, other.position.lng)
@@ -43,10 +58,14 @@
       }
     },
     manageEncounter: function(other) {
-      this.trigger('alert', 'encounter between '+this.name + ' and '+ other.name);
+      if(!this.inParty && !other.inParty &&
+          (this.type == 'character' || (this.type == 'party' && !this.isMember(other)))
+        ) {
+        this.trigger('alert', 'encounter between '+this.name + ' and '+ other.name);
+      }
     },
     manageSeeing: function(other) {
-      this.trigger('alert', other.name + ' see ' + this.name + 'from afar');
+//      this.trigger('alert', this.name + ' see ' + other.name + ' from afar');
     },
     checkEncounter: function() {
       this.map.trigger('checkEncounter', this);
@@ -72,7 +91,8 @@
       }
 
       this.destination = this.map.grid[x][y];
-      this.getPath(this.position, this.destination.getLatLng())
+      var latlngDest = this.destination.getLatLng();
+      this.getPath(this.position, latlngDest)
       this.trigger('path:changed');
     },
     setPathOther: function(other) {
@@ -80,7 +100,12 @@
       other.trigger('path:changed');
     },
     setPathOtherPos: function(other) {
-      this.getPath(this.position, other.getNextStep())
+      var destination = other.getNextStep();
+      if(!destination) {
+        destination = other.position;
+
+      }
+      this.getPath(this.position, destination)
     },
     setDestination: function(end, latlng) {
       latlng = latlng || end.getLatLng();
@@ -89,7 +114,9 @@
     },
     setPosition: function(pos) {
       this.position = pos;
-
+      if(this.tile) this.tile.removeChar(this);
+      this.tile = this.map.getTile(pos);
+      this.tile.addChar(this);
     },
     getNextStep: function() {
       for(var n in this.path) {
@@ -97,9 +124,18 @@
           return this.path[n]
         }
       }
-      return this.path[this.path.length - 1]
+      if(this.path && this.path.length > 0) {
+        return this.path[this.path.length - 1]
+      } else {
+        return null;
+      }
+
     },
     getPath: function(a, b, append) {
+      // same destination, not need to recalculate
+      if(b == this.destinationLatLng) {
+        return false;
+      }
       var self = this;
       if(a.getLatLng) {
         a = a.getLatLng();
@@ -107,8 +143,12 @@
       var origin = this.map.getTile(a);
       var end = this.map.getTile(b);
       this.setDestination(end, b);
-      $.when(this.map.getPath(origin, end)).done(function(newpath, res2) {
+      $.when(this.map.getPath(origin, end)).always(function(newpath, res2) {
         if(!newpath.length) {
+          // same tile
+          if(origin == end) {
+            self.path.push(b);
+          }
           return false;
         };
 
@@ -130,8 +170,11 @@
         }
       })
     },
+    rushOn: function() {
+      this.rush = 2;
+    },
     transformPathToSpeed: function(path, origin) {
-      var transformSpeed = (10 - this.speed) + 1
+      var transformSpeed = (10 - this.speed) + 1;
       var wholePath = [];
       var current = origin;
       for(var i in path) {
@@ -180,6 +223,10 @@
     },
     freeze: function() {
       this.freezed = 2;
+    },
+    addedToParty: function() {
+      this.inParty = true;
+      this.trigger('added:party')
     }
   });
 })()

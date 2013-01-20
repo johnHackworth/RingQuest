@@ -199,7 +199,6 @@
           defender.health -= damage;
           self.updateStatus(defender, damage);
           if(defender.health <= 0) {
-            debugger;
             setTimeout(self.checkEnd.bind(self), 2000)
             defenderAvatar.addClass('dead')
             defender.trigger('death', defender);
@@ -267,7 +266,6 @@
 
     },
     checkEnd: function() {
-      debugger;
       var defendersLeft = false;
       var defendersFlee = false;
       var attackersLeft = false;
