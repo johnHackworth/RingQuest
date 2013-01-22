@@ -21,7 +21,6 @@
         console.log(other.ringBearer)
         if(other.ringBearer) {
           if(!this.rush) this.rushOn();
-          console.log(other.name, this.name)
           this.setPathOtherPos(other);
         }
       }

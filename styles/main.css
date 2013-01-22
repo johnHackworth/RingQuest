@@ -29,6 +29,7 @@ body {
   left: 0;
   opacity: 0.9;
   display: none;
+  z-index: 2000;
 }
 
 .tile {
@@ -36,9 +37,7 @@ body {
   stroke-linejoin: round;
   stroke-opacity: 1;
   stroke-width: 3px;
-  stroke-color
   width: 10px;
-  marker-line-color: #229A00;
   marker-opacity: 0.8;
   marker-allow-overlap: false;
   marker-placement: point;
@@ -53,7 +52,7 @@ body {
 }
 
 .character {
-  stroke-width: 5;
+  stroke-width: 2;
   stroke: #666;
 }
 
@@ -69,4 +68,15 @@ body {
   fill: #220000;
 }
 
-
+.button {
+  min-width:30px;
+  min-height:20px;
+  font-size: 12px;
+  border-radius: 5px;
+  background-color: #333;
+  color: #CCC;
+  text-align: center;
+  display: inline-block;
+  cursor: pointer;
+  padding:5px 10px 2px;
+}

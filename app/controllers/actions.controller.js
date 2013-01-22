@@ -12,6 +12,7 @@
       var self = this;
       this.element = options.element;
       this.templateDirector = options.templateDirector;
+      this.characterSheet = options.characterSheet;
       $.when(this.templateDirector.get('actions')).done(function(res, res2) {
         self.frameTemplate = self.templateDirector.getSubtemplate('actions', 'frame');
         self.buttonTemplate = self.templateDirector.getSubtemplate('actions', 'button');
@@ -19,6 +20,7 @@
       })
       this.actions = [];
       this.element.on('click', 'a.talk', this.talk.bind(this));
+      this.element.on('click', 'a.examine', this.examine.bind(this));
     },
     render: function() {
       this.element.html(this.frameTemplate);
@@ -41,6 +43,11 @@
     talk: function(ev) {
       var character = $(ev.currentTarget).data('character')
       this.trigger('talkCharacter', character)
+    },
+
+    examine: function(ev) {
+      var character = $(ev.currentTarget).data('character')
+      this.trigger('examineCharacter', character);
     }
   });
 })();

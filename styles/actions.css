@@ -1,6 +1,6 @@
 #availableActions {
   position: fixed;
-  bottom: 0;
+  bottom: 15px;
   width: 300px;
   right: 0;
   padding: 10px;
@@ -9,12 +9,20 @@
 }
 
 #availableActions a {
+  min-width: 90px;
   background-color: #ccc;
-  padding: 2px;
-  margin-right: 2px;
-  font-size: 10px;
+  padding: 10px;
+  margin:10px;
+  font-size: 12px;
   border-radius: 3px;
   text-decoration: none;
   color: #333;
-  opacity: 0.8;
+  opacity: 0.9;
+}
+#availableActions a.talk {
+  background-color: #CFC;
+}
+
+#availableActions a.fight {
+  background-color: #FCC;
 }

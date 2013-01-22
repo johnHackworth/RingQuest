@@ -47,6 +47,7 @@
     },
     removeChar: function(char) {
       delete this.currentChars[char.name];
-    }
+    },
+
   });
 })()

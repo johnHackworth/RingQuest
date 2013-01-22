@@ -16,7 +16,7 @@
       this.model = options.model
       this.map = options.map;
       this.model.on('path:changed', this.pathChanged.bind(this));
-      this.model.on('death', this.remove.bind(this));
+      this.model.on('char:dead', this.remove.bind(this));
       this.model.on('added:party', this.remove.bind(this));
       this.map.on('zoom:changed', this.redraw.bind(this));
     },
@@ -31,27 +31,47 @@
       clearTimeout(this.posTimeout);
       this.move();
     },
+    getRandomColor: function() {
+      return '#'+'0123456789abcdef'.split('').map(function(v,i,a){
+                                                    return i>5 ? null : a[Math.floor(Math.random()*16)]
+                                              }).join('');
+    },
+    getColor: function() {
+      var c1;
+      if(this.alignment === 'evil') {
+        c1 = '#333';
+      } else {
+        c1 = '#'
+      }
+
+      return c1;
+    },
     addToMap: function() {
-      this.view = this.createCircle(3,
+      this.view = this.createCircle(4,
         this.model.position.lat,
-        this.model.position.lng
+        this.model.position.lng,
+        false,
+        this.model.name
       );
-      this.view.attr('fill',self.color)
-            .attr('stroke',self.color2)
-            .attr('fill', 'red')
-            .attr('line-color', 'blue')
+      if(!self.color) {self.color = this.getColor()};
+      if(!self.color2) {self.color2 = this.getRandomColor()};
+      this.view.attr('fill',self.color2)
+            .attr('stroke',self.color)
+            .attr('line-color', self.color2)
             .attr('class','character ' + this.model.type + ' '+this.model.alignment)
             .attr('name', this.model.name)
       this.view.update();
       // setTimeout(this.move.bind(this),25);
     },
     moveTo: function(latLng) {
-      this.view.data([latLng]);
-      this.view.move();
+      if(this.view) {
+        this.view.data([latLng]);
+        this.view.move();
 
-      if(this.fog) {
-        this.fog.data([latLng]);
-        this.fog.move();
+        if(this.fog) {
+          this.fog.data([latLng]);
+          this.fog.move();
+        }
       }
     },
     playerControlled: function() {

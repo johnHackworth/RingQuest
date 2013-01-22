@@ -10,6 +10,8 @@
     health: 5,
     maxHealth: 10,
     speed: 5,
+    stamina: 5,
+    maxStamina: 10,
     alignment: 'neutral',
     followers: [],
     type: 'character',
@@ -49,10 +51,10 @@
       if(other != this && other.followers.indexOf(this) <0 && this.followers.indexOf(other) < 0) {
         var pos = new L.LatLng(this.position.lat, this.position.lng)
         var posOther = new L.LatLng(other.position.lat, other.position.lng)
-        if(pos.distanceTo(posOther) < 200000) {
+        if(pos.distanceTo(posOther) < 200000 && (Math.random()*this.vision > Math.random()*other.stealth)) {
           this.manageSeeing(other);
         }
-        if(pos.distanceTo(posOther) < 20000) {
+        if(pos.distanceTo(posOther) < 20000 && (3*Math.random()*this.vision > Math.random()*other.stealth)) {
           this.manageEncounter(other);
         }
       }
@@ -61,7 +63,10 @@
       if(!this.inParty && !other.inParty &&
           (this.type == 'character' || (this.type == 'party' && !this.isMember(other)))
         ) {
-        this.trigger('alert', 'encounter between '+this.name + ' and '+ other.name);
+        if(!other.hasMeet) {
+          this.trigger('alert', 'encounter between '+this.name + ' and '+ other.name);
+        }
+
       }
     },
     manageSeeing: function(other) {
@@ -208,7 +213,13 @@
       }
       return pathArray;
     },
-
+    takeDamage: function(amount) {
+      this.health -= amount;
+      this.trigger('char:damaged');
+    },
+    dead: function() {
+      this.trigger('char:dead', this);
+    },
     getCombatAction: function() {
       if(this.selectedCombatAction) {
         return this.selectedCombatAction;

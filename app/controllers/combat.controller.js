@@ -77,12 +77,14 @@
     },
     assignTop: function() {
       for(var i in this.defenders) {
+        console.log(this.defenders[i])
         var defender = this.element.find('.characterAvatar.'+this.defenders[i].name)
         defender.css({top: (30*i)})
         defender.data('rest-position', 30*i)
         defender.data('combat-position', ""+(20+8*i)+"%")
       }
       for(var i in this.attackers) {
+        console.log(this.attackers[i].name);
         var attacker = this.element.find('.characterAvatar.'+this.attackers[i].name);
         attacker.css({top: (30*i)})
         attacker.data('rest-position', 30*i)
@@ -106,18 +108,22 @@
       var defenses = [];
       for(var i in this.attackers) {
         if(typeof this.attackers[i] === 'object') {
-          attacks.push({
-            char: this.attackers[i],
-            action: this.attackers[i].getCombatAction()
-          })
+          if(this.attackers[i].health > 0) {
+            attacks.push({
+              char: this.attackers[i],
+              action: this.attackers[i].getCombatAction()
+            })
+          }
         }
       }
       for(var i in this.defenders) {
         if(typeof this.defenders[i] === 'object') {
-          defenses.push({
-            char: this.defenders[i],
-            action: this.defenders[i].getCombatAction()
-          })
+          if(this.defenders[i].health > 0) {
+            defenses.push({
+              char: this.defenders[i],
+              action: this.defenders[i].getCombatAction()
+            })
+          }
         }
       }
       var activity = [];
@@ -141,6 +147,7 @@
       button.addClass('selected');
       var charName = $(ev.currentTarget).data('char');
       for(var i in this.playerFaction) {
+
         if(this.playerFaction[i].name == charName) {
           this.playerFaction[i].selectedCombatAction = 'attack';
         }
@@ -169,10 +176,11 @@
     },
     fight: function(attacker, defender, attackerAction, defenderAction) {
       var dfd = $.Deferred();
-      if(this.closing) return;
       var self = this;
-      console.log('fight')
+
+      if(this.closing) return;
       if(attacker.health < 1) return;
+
       var attackerAvatar = this.element.find('.characterAvatar.'+attacker.name);
       var defenderAvatar = this.element.find('.characterAvatar.'+defender.name);
       attackerAvatar.css({left: "48%", top: attackerAvatar.data('combat-position')});
@@ -195,29 +203,23 @@
 
         if(attackForce > defenseForce) {
           var damage = Math.floor(attackForce / defenseForce);
-          defender.trigger('damage', defender, damage);
-          defender.health -= damage;
+          defender.takeDamage(damage);
           self.updateStatus(defender, damage);
           if(defender.health <= 0) {
             setTimeout(self.checkEnd.bind(self), 2000)
             defenderAvatar.addClass('dead')
-            defender.trigger('death', defender);
-
-
+            defender.dead();
           }
         }
 
         if(counterStrike > attackForce) {
           var damage = Math.floor(counterStrike / attackForce);
-          defender.trigger('damage', attacker, damage);
-          attacker.health -= damage;
+          attacker.takeDamage(damage);
           self.updateStatus(attacker, damage);
           if(attacker.health <= 0) {
             setTimeout(self.checkEnd.bind(self), 2000)
             attackerAvatar.addClass('dead')
-            attacker.trigger('death', attacker);
-
-
+            attacker.dead();
           }
         }
 

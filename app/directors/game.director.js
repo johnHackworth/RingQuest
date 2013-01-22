@@ -14,13 +14,15 @@
       this.injectConstants();
       this.bindMethods();
       this.initializeLog();
-      this.initializeActions();
       this.initializeMap();
       this.initializeCombat();
+      this.initializeCharacterSheet();
+      this.initializeActions();
       this.initializeConversation();
       this.initializeRingBearer();
       this.initializePlayableCharacters();
       this.initializeEvilMainCharacters();
+      this.initializePartyStatus();
       this.runTime();
     },
     injectConstants: function() {
@@ -35,13 +37,27 @@
       boundaries = $.extend(true, [], this.mapBounds);
       this.controllers.map = new ringQuest.controllers.mainMap({element:"mainMap", model: this.models.map, boundaries: boundaries})
     },
+    initializePartyStatus: function() {
+      this.partyStatus = new ringQuest.controllers.party({
+        templateDirector: this.templateDirector,
+        party: this.models.fellowship,
+        characterSheet: this.characterSheet,
+        element: $('#partyStatus')
+      });
+      $.when(this.partyStatus.ready).done(this.partyStatus.renderAndFill.bind(this.partyStatus));
+      this.models.fellowship.on('party:updated', this.partyStatus.updateView.bind(this.partyStatus));
+
+    },
     initializeActions: function() {
       this.actions = new ringQuest.controllers.actions({
         templateDirector: this.templateDirector,
+        characterSheet: this.characterSheet,
         element: $('#availableActions')
       });
       $.when(this.actions.ready).done(this.actions.render.bind(this.actions));
       this.actions.on('talkCharacter', this.listenTalk.bind(this));
+      this.actions.on('examineCharacter', this.listenExamine.bind(this));
+      // this.on('actions:update', this.setAvailableActions.bind(this));
     },
     initializePlayableCharacters: function() {
       var aragorn = this.initializeChar({name: 'aragorn', lat: -60, lng: -86})
@@ -65,6 +81,7 @@
       fellowship.controller.playerControlled();
       fellowship.model.ringBearer = true;
       fellowship.model.addMember(frodo.model);
+      fellowship.model.on('playerPosition:updated', this.setAvailableActions.bind(this));
     },
     initializeEvilMainCharacters: function() {
       var nNazgul = 5;
@@ -101,7 +118,7 @@
       wraith.model.img = '/assets/sprites/wraith.png';
       wraith.controller.addToMap();
 
-      var oldTree = this.initializeChar({name: 'old willow tree', lat: -61  , lng: -92, type: 'evil'})
+      var oldTree = this.initializeChar({name: 'old_willow_tree', lat: -61  , lng: -92, type: 'evil'})
       oldTree.model.img = '/assets/sprites/eviltree.png';
       oldTree.controller.addToMap();}
     ,
@@ -121,7 +138,7 @@
 
       this.characters[char.name].on('alert', this.listenCharacterLog.bind(this))
       this.characters[char.name].on('attack', this.listenAttack.bind(this))
-      this.characters[char.name].on('meet', this.listenMeet.bind(this))
+      this.characters[char.name].on('character:meet', this.listenMeet.bind(this))
       this.characters[char.name].on('death', this.characterDeath.bind(this))
       var controller = new ringQuest.controllers.character({
         model: ringQuest.mdl(char.name),
@@ -142,7 +159,7 @@
 
       this.parties[party.name].on('alert', this.listenCharacterLog.bind(this))
       this.parties[party.name].on('attack', this.listenAttack.bind(this))
-      this.parties[party.name].on('meet', this.listenMeet.bind(this))
+      this.parties[party.name].on('character:meet', this.listenMeet.bind(this))
 
       var controller = new ringQuest.controllers.character({
         model: ringQuest.mdl(party.name),
@@ -181,6 +198,13 @@
       this.conversation.on('conversationClose', this.runTime.bind(this))
       this.conversation.on('joinParty', this.listenJoin.bind(this));
     },
+    initializeCharacterSheet: function() {
+      this.characterSheet = new ringQuest.controllers.sheet({
+        templateDirector: this.templateDirector,
+        element: $('#sheetWindow')
+      });
+      this.characterSheet.on('dialogClose', this.runTime.bind(this))
+    },
     listenCharacterLog: function(ev, text) {
       this.logger.log(text)
     },
@@ -193,12 +217,17 @@
       this.freezeTime();
       this.conversation.talkWith(this.models[char])
     },
+    listenExamine: function(ev, char) {
+      this.freezeTime();
+      this.characterSheet.render(this.models[char])
+    },
+
     listenJoin: function(ev, char) {
       this.parties.fellowship.addMember(char);
     },
     listenMeet: function(ev, char) {
-      if(!char.inParty && !char.meet) {
-        char.meet = true;
+      if(char && (!char.inParty && !char.hasMeet)) {
+        char.hasMeet = true;
         this.logger.log('The ring bearer has meet '+char.name)
       }
 
@@ -222,7 +251,6 @@
       for(var name in this.models) {
         if(this.models[name].type == 'character' || this.models[name].type == 'party') {
          setTimeout(this.models[name].checkSurrondings.bind(this.models[name]), (this.gameSpeed / 2));
-         setTimeout(this.setAvailableActions.bind(this), (this.gameSpeed / 2));
         }
       }
 
@@ -235,13 +263,17 @@
         if(surrondingChars[i].alignment == 'evil') {
           oposition  = true;
         };
+        if(surrondingChars[i].type == 'character' && !surrondingChars[i].inParty) {
+          this.actions.addAction('examine', surrondingChars[i]);
+        }
         if(surrondingChars[i].type == 'character' && surrondingChars[i].alignment == 'good' && !surrondingChars[i].inParty) {
           this.actions.addAction('talk', surrondingChars[i]);
         }
-        if(oposition) {
-          this.actions.addAction('attack');
-        }
       }
+      if(oposition) {
+        this.actions.addAction('attack');
+      }
+
       this.actions.refreshButtons();
     }
   })

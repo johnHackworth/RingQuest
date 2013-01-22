@@ -1,0 +1,22 @@
+<div>
+  <script id="frame" type="text/template">
+    <div class="partyMembers">
+    </div>
+    <div class="partyActions">
+    </div>
+  </script>
+
+  <script id="members" type="text/template">
+      <% _.each(members, function(char) { %>
+        <div class="characterLine charInfo <%= char.name %>" data-char="<%= char.name %>">
+          <img src="<%= char.img %>" ></img> <%= char.name %> ( <span class="currentHealth"> <%= char.health %> </span> / <%= char.maxHealth %>)
+        </div> <% });
+      %>
+  </script>
+
+  <script id="buttons" type="text/template">
+    <a href="#" class="inventory" > inventory </a>
+    <a href="#" class="sneak <% if(sneaking) { %>selected<% } %>"> sneak </a>
+  </script>
+
+</div>

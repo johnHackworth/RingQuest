@@ -1,0 +1,57 @@
+#partyStatus {
+  position: fixed;
+  top:0;
+  width: 150px;
+  left: 0;
+  padding: 10px;
+  opacity: 0.8;
+  background-color: #CCC;
+  z-index: 1000;
+  font-size: 12px;
+  font-family: verdana;
+  font-color: #666;
+}
+
+#partyStatus img {
+  height: 25px;
+}
+
+#partyStatus .partyMembers {
+  width:100%;
+  float:left;
+}
+#partyStatus .partyActions {
+  margin-top: 10px;
+  width:100%;
+  float:left;
+}
+#partyStatus a {
+  display: inline-block;
+  min-width: 30px;
+  background-color: #ccc;
+  padding: 5px;
+  margin:5px;
+  font-size: 10px;
+  border-radius: 3px;
+  text-decoration: none;
+  color: #333;
+  opacity: 0.9;
+  border: 2px solid #BBB;
+}
+
+#partyStatus a.selected {
+  border: 2px solid gold;
+}
+
+#partyStatus a.sneak {
+  background-color: #333;
+  color: #F66;
+}
+
+#partyStatus a.inventory {
+  background-color: #CFC;
+}
+
+#partyStatus .characterLine.charInfo {
+  cursor: pointer;
+}
